@@ -1,634 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pierce the PFP - Photo Effect Generator</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: radial-gradient(ellipse at top, #0f0f0f 0%, #1a1a1a 50%, #2d2d2d 100%);
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(255, 107, 53, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .header h1 {
-            font-size: 3.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 30%, #ffa500 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 15px;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
-            letter-spacing: -2px;
-        }
-
-        .header p {
-            color: #bbb;
-            font-size: 1.2rem;
-            font-weight: 300;
-            letter-spacing: 0.5px;
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 40px;
-            max-width: 1600px;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
-        .controls {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            height: fit-content;
-        }
-
-        .control-group {
-            margin-bottom: 30px;
-        }
-
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .control-group label {
-            display: block;
-            margin-bottom: 12px;
-            color: #ffd700;
-            font-weight: 600;
-            font-size: 0.95rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .file-input-wrapper {
-            position: relative;
-            display: block;
-            width: 100%;
-        }
-
-        .file-input {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }        .file-input-button {
-            display: block;
-            width: 100%;
-            padding: 16px 20px;
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            color: #1a1a1a;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 1rem;
-            text-align: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        .file-input-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .file-input-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4);
-        }
-
-        .file-input-button:hover::before {
-            left: 100%;
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }        .slider {
-            flex: 1;
-            height: 6px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.1);
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-            position: relative;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            cursor: pointer;
-            border: 3px solid #1a1a1a;
-            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-            transition: all 0.2s ease;
-        }
-
-        .slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
-        }
-
-        .slider::-moz-range-thumb {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            cursor: pointer;
-            border: 3px solid #1a1a1a;
-            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-        }
-
-        .value-display {
-            color: #ffd700;
-            font-weight: 700;
-            font-size: 1rem;
-            min-width: 35px;
-            text-align: center;
-            background: rgba(255, 215, 0, 0.1);
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-
-        .button {
-            width: 100%;
-            padding: 16px 20px;
-            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 1rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(255, 107, 53, 0.4);
-        }
-
-        .button:hover::before {
-            left: 100%;
-        }
-
-        .canvas-container {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 500px;
-            justify-content: center;
-        }
-
-        #canvas {
-            max-width: 100%;
-            max-height: 75vh;
-            border-radius: 15px;
-            box-shadow: 
-                0 15px 50px rgba(0, 0, 0, 0.4),
-                0 5px 20px rgba(0, 0, 0, 0.2);
-            background: #222;
-            transition: all 0.3s ease;
-        }
-
-        #canvas:hover {
-            transform: scale(1.02);
-            box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.5),
-                0 8px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .preview-info {
-            color: #888;
-            font-style: italic;
-            text-align: center;
-            padding: 60px 40px;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
-        .github-footer {
-            margin-top: 50px;
-            text-align: center;
-            color: #666;
-            font-size: 0.9rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .github-footer a {
-            color: #ffd700;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .github-footer a:hover {
-            color: #ffed4e;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
-
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
-            
-            .controls {
-                order: 2;
-            }
-            
-            .canvas-container {
-                order: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2.5rem;
-            }
-            
-            .container {
-                gap: 20px;
-            }
-            
-            .controls, .canvas-container {
-                padding: 20px;
-            }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .loading {
-            animation: pulse 1.5s infinite;
-        }
-    </style>
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="header">
-        <h1>Pierce the PFP</h1>
-        <p>Create the iconic yellow halftone photo effect</p>
+      <h1>Pierce the PFP</h1>
+      <p>Create the iconic yellow halftone photo effect</p>
     </div>
 
     <div class="container">
-        <div class="controls">
-            <div class="control-group">
-                <label>Upload Photo:</label>                <div class="file-input-wrapper">
-                    <input type="file" class="file-input" id="imageInput" accept="image/*">
-                    <div class="file-input-button" title="Kliknij lub przeciągnij zdjęcie tutaj">📸 Choose Image</div>
-                </div>
+      <div class="settings-overlay" id="settingsOverlay"></div>
+      <button id="backButton" class="back-button" style="display: none">
+        ← Back
+      </button>
+      <button id="panelToggle" class="panel-toggle">⚙️ Settings</button>
+      <div class="controls collapsed">
+        <div class="control-group">
+          <label>Upload Photo:</label>
+          <div class="file-input-wrapper">
+            <input
+              type="file"
+              class="file-input"
+              id="controlsImageInput"
+              accept="image/*"
+            />
+            <div
+              class="file-input-button"
+              title="Kliknij lub przeciągnij zdjęcie tutaj"
+            >
+              📸 Choose Image
             </div>
-
-            <div class="control-group">
-                <label>Contrast:</label>
-                <div class="slider-container">
-                    <input type="range" class="slider" id="contrast" min="100" max="300" value="165">
-                    <span class="value-display" id="contrastValue">165</span>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>Brightness:</label>
-                <div class="slider-container">
-                    <input type="range" class="slider" id="brightness" min="80" max="200" value="110">
-                    <span class="value-display" id="brightnessValue">110</span>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>Yellow Intensity:</label>
-                <div class="slider-container">
-                    <input type="range" class="slider" id="yellowIntensity" min="0" max="100" value="75">
-                    <span class="value-display" id="yellowValue">75</span>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>Dot Size:</label>
-                <div class="slider-container">
-                    <input type="range" class="slider" id="dotSize" min="2" max="8" value="4">
-                    <span class="value-display" id="dotSizeValue">4</span>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>Halftone Intensity:</label>
-                <div class="slider-container">
-                    <input type="range" class="slider" id="halftoneIntensity" min="0" max="100" value="60">
-                    <span class="value-display" id="halftoneValue">60</span>
-                </div>
-            </div>
-
-            <button class="button" onclick="downloadImage()">💾 Download Image</button>
+          </div>
         </div>
 
-        <div class="canvas-container">
-            <canvas id="canvas"></canvas>
-            <div class="preview-info" id="previewInfo">
-                Upload an image to start creating the Pierce the PFP effect
-            </div>
+        <div class="control-group">
+          <label>Contrast:</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              class="slider"
+              id="contrast"
+              min="100"
+              max="300"
+              value="165"
+            />
+            <span class="value-display" id="contrastValue">165</span>
+          </div>
         </div>
+
+        <div class="control-group">
+          <label>Brightness:</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              class="slider"
+              id="brightness"
+              min="80"
+              max="200"
+              value="110"
+            />
+            <span class="value-display" id="brightnessValue">110</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Yellow Intensity:</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              class="slider"
+              id="yellowIntensity"
+              min="0"
+              max="100"
+              value="75"
+            />
+            <span class="value-display" id="yellowValue">75</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Dot Size:</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              class="slider"
+              id="dotSize"
+              min="2"
+              max="8"
+              value="4"
+            />
+            <span class="value-display" id="dotSizeValue">4</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Halftone Intensity:</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              class="slider"
+              id="halftoneIntensity"
+              min="0"
+              max="100"
+              value="60"
+            />
+            <span class="value-display" id="halftoneValue">60</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+        <div class="preview-info" id="previewInfo">
+          Upload an image to start creating the Pierce the PFP effect
+        </div>
+        <div class="action-buttons">
+          <div class="file-input-wrapper upload-wrapper">
+            <input
+              type="file"
+              class="file-input"
+              id="mainImageInput"
+              accept="image/*"
+            />
+            <button class="button upload-button" id="uploadButton">
+              📸 Upload Photo
+            </button>
+          </div>
+          <button
+            class="button download-button"
+            onclick="downloadImage()"
+            style="display: none"
+          >
+            💾 Download Image
+          </button>
+        </div>
+        <div class="save-checkbox-wrapper" style="margin-top: 20px">
+          <label class="save-checkbox-label">
+            <input
+              type="checkbox"
+              id="saveImageCheckbox"
+              class="save-checkbox"
+              checked
+            />
+            <span class="checkmark"></span>
+            Save my image for later
+          </label>
+        </div>
+      </div>
+
+      <div
+        class="recent-images-section"
+        id="recentImagesSection"
+        style="display: none"
+      >
+        <h3>Recent Images</h3>
+        <div class="recent-images-grid" id="recentImagesGrid">
+          <!-- Recent images will be populated here -->
+        </div>
+        <button class="button forget-button" id="forgetButton">
+          🗑️ Forget All Images
+        </button>
+      </div>
     </div>
 
     <div class="github-footer">
-        <p>Pierce the PFP • <a href="https://github.com/meetzli/pierce-the-pfp" target="_blank">View on GitHub</a></p>
+      <p>
+        Pierce the PFP •
+        <a href="https://github.com/meetzli/pierce-the-pfp" target="_blank"
+          >View on GitHub</a
+        >
+      </p>
     </div>
 
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let originalImage = null;
-
-        const imageInput = document.getElementById('imageInput');
-        const contrastSlider = document.getElementById('contrast');
-        const brightnessSlider = document.getElementById('brightness');
-        const yellowSlider = document.getElementById('yellowIntensity');
-        const dotSizeSlider = document.getElementById('dotSize');
-        const halftoneSlider = document.getElementById('halftoneIntensity');
-
-        function updateDisplayValues() {
-            document.getElementById('contrastValue').textContent = contrastSlider.value;
-            document.getElementById('brightnessValue').textContent = brightnessSlider.value;
-            document.getElementById('yellowValue').textContent = yellowSlider.value;
-            document.getElementById('dotSizeValue').textContent = dotSizeSlider.value;
-            document.getElementById('halftoneValue').textContent = halftoneSlider.value;
-        }        const fileInputButton = document.querySelector('.file-input-button');
-        
-        fileInputButton.addEventListener('click', function() {
-            imageInput.click();
-        });
-
-        fileInputButton.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            fileInputButton.style.backgroundColor = 'rgba(255, 215, 0, 0.9)';
-        });
-
-        fileInputButton.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            fileInputButton.style.backgroundColor = '';
-        });
-
-        fileInputButton.addEventListener('drop', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            fileInputButton.style.backgroundColor = '';
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                const file = files[0];
-                if (file.type.startsWith('image/')) {
-                    imageInput.files = files;
-                    handleFileSelect(file);
-                }
-            }
-        });
-
-        function handleFileSelect(file) {
-            fileInputButton.textContent = `📸 ${file.name}`;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    originalImage = img;
-                    setupCanvas();
-                    applyEffect();
-                    document.getElementById('previewInfo').style.display = 'none';
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        imageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                handleFileSelect(file);
-            }
-        });
-
-        function setupCanvas() {
-            const maxWidth = 800;
-            const maxHeight = 600;
-            
-            let { width, height } = originalImage;
-            
-            if (width > maxWidth) {
-                height = (height * maxWidth) / width;
-                width = maxWidth;
-            }
-            
-            if (height > maxHeight) {
-                width = (width * maxHeight) / height;
-                height = maxHeight;
-            }
-            
-            canvas.width = width;
-            canvas.height = height;
-            canvas.style.display = 'block';
-        }
-
-        function applyEffect() {
-            if (!originalImage) return;
-
-            ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
-            
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-
-            const contrast = parseFloat(contrastSlider.value) / 100;
-            const brightness = parseFloat(brightnessSlider.value) / 100;
-            const yellowIntensity = parseFloat(yellowSlider.value) / 100;
-
-            for (let i = 0; i < data.length; i += 4) {
-                let r = data[i];
-                let g = data[i + 1];
-                let b = data[i + 2];
-
-                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-
-                let processed = gray * brightness;
-                processed = ((processed - 128) * contrast) + 128;
-                processed = Math.max(0, Math.min(255, processed));
-
-                const normalizedGray = processed / 255;
-                
-                const fadeYellow = yellowIntensity * 0.85;
-                const warmth = yellowIntensity * 0.25;
-                
-                if (normalizedGray > 0.6) {
-                    r = Math.min(255, processed + (250 - processed) * fadeYellow);
-                    g = Math.min(255, processed + (235 - processed) * fadeYellow);
-                    b = Math.max(0, processed * (1 - fadeYellow * 0.7) + 35 * warmth);
-                } else if (normalizedGray > 0.25) {
-                    const yellowFactor = (normalizedGray - 0.25) / 0.35;
-                    r = processed + (230 - processed) * yellowFactor * fadeYellow;
-                    g = processed + (210 - processed) * yellowFactor * fadeYellow;
-                    b = processed * (1 - yellowFactor * fadeYellow * 0.6) + 25 * warmth;
-                } else {
-                    r = processed * (0.95 + warmth * 0.15);
-                    g = processed * (0.85 + warmth * 0.12);
-                    b = processed * (0.65 + warmth * 0.08);
-                }
-
-                data[i] = Math.max(0, Math.min(255, r));
-                data[i + 1] = Math.max(0, Math.min(255, g));
-                data[i + 2] = Math.max(0, Math.min(255, b));
-            }
-
-            ctx.putImageData(imageData, 0, 0);
-
-            applyHalftoneEffect();
-        }
-
-        function applyHalftoneEffect() {
-            const halftoneIntensity = parseFloat(halftoneSlider.value) / 100;
-            const dotSize = parseInt(dotSizeSlider.value);
-            
-            if (halftoneIntensity === 0) return;
-
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            
-            tempCtx.drawImage(canvas, 0, 0);
-            
-            const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-
-            ctx.globalCompositeOperation = 'multiply';
-            ctx.fillStyle = '#000000';
-
-            for (let y = 0; y < canvas.height; y += dotSize * 2) {
-                for (let x = 0; x < canvas.width; x += dotSize * 2) {
-                    const pixelIndex = (y * canvas.width + x) * 4;
-                    if (pixelIndex < data.length) {
-                        const brightness = (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3;
-                        const normalizedBrightness = brightness / 255;
-                        
-                        if (normalizedBrightness < 0.7) {
-                            const dotRadius = dotSize * (1 - normalizedBrightness) * halftoneIntensity;
-                            if (dotRadius > 0.5) {
-                                ctx.beginPath();
-                                ctx.arc(x + dotSize, y + dotSize, dotRadius, 0, Math.PI * 2);
-                                ctx.fill();
-                            }
-                        }
-                    }
-                }
-            }
-
-            ctx.globalCompositeOperation = 'source-over';
-        }
-
-        function downloadImage() {
-            if (!originalImage) {
-                alert('Please upload an image first!');
-                return;
-            }
-            
-            const link = document.createElement('a');
-            link.download = 'pierce-the-pfp-effect.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        }
-
-        [contrastSlider, brightnessSlider, yellowSlider, dotSizeSlider, halftoneSlider].forEach(slider => {
-            slider.addEventListener('input', function() {
-                updateDisplayValues();
-                if (originalImage) applyEffect();
-            });
-        });
-
-        updateDisplayValues();
-    </script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
